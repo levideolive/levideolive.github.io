@@ -1,41 +1,12 @@
-# Caminho para os executáveis
-$caddyPath = "C:\Caddy\caddy.exe"
-$ngrokPath = "C:\Ngrok\ngrok.exe"
-$repoPath = "C:\Sites\jellyfin-github"
-
-# Inicia o Caddy
-Start-Process -FilePath $caddyPath -ArgumentList "run" -WindowStyle Hidden
-Start-Sleep -Seconds 2
-
-# Inicia o Ngrok e captura o link público
-$ngrokProcess = Start-Process -FilePath $ngrokPath -ArgumentList "http http://localhost:8080" -NoNewWindow -PassThru
-Start-Sleep -Seconds 5
-
-# Obtém o link do ngrok via API local
-$response = Invoke-RestMethod http://127.0.0.1:4040/api/tunnels
-$ngrokUrl = $response.tunnels[0].public_url
-
-# Atualiza o index.html com o novo link
-$html = @"
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Jellyfin</title>
+    <title>Jellyfin Online</title>
 </head>
-<body>
+<body style="text-align: center; font-family: Arial, sans-serif;">
     <h1>Jellyfin Online</h1>
     <p>Acesse o Jellyfin pelo link abaixo:</p>
-    <a href="$ngrokUrl" target="_blank">$ngrokUrl</a>
+    <a href="https://f0ea-2804-7f0-a217-8bb1-c53d-b7ef-ea59-27a6.ngrok-free.app" target="_blank" style="font-size: 20px;">https://f0ea-2804-7f0-a217-8bb1-c53d-b7ef-ea59-27a6.ngrok-free.app</a>
 </body>
 </html>
-"@
-
-# Salva o index.html no repositório local
-Set-Content -Path "$repoPath\index.html" -Value $html -Encoding UTF8
-
-# Faz commit e push para o GitHub
-Set-Location $repoPath
-git add index.html
-git commit -m "Atualizando link do Jellyfin: $ngrokUrl"
-git push origin main
